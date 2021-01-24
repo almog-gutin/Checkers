@@ -8,7 +8,7 @@ This was wriiten with:
 + CSS3
 + Vanilla JavaScript 
 
-[Click here if you would like to play the game.]()
+[Click here if you would like to play the game.](src/Checkers.html)
 
 ## < Rules />
 1. __General rules-__
