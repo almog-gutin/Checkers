@@ -2,7 +2,6 @@
 
 ## < General />
 This is a basic player vs. player Checkers game on the web for desktop and mobile.
-[](https:www.google.com/)
 
 This was wriiten with: 
 + HTML5
