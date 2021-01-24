@@ -45,9 +45,9 @@ This was wriiten with:
         3.	Draw by agreement.
 
 ## < Screenshots />
-![Desktop Homepage]()
-![Desktop Gamepage]()
-![Desktop Endpage]()
-![Mobile Homepage]()
-![Mobile Gamepage]()
-![Mobile Endpage]()
+![Desktop Homepage](Images/1-DesktopHomepage.png)
+![Desktop Gamepage](Images/2-DesktopGamepage.png)
+![Desktop Endpage](Images/3-DesktopEndpage.png)
+![Mobile Homepage](Images/4-MobileHomepage.png)
+![Mobile Gamepage](Images/5-MobileGamepage.png)
+![Mobile Endpage](Images/6-MobileEndpage.png)
