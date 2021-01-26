@@ -153,12 +153,9 @@ function makeMove (event) {
     if (indexClickedPiece === null || indexMove === null) return;
     let move = allAvailbleMoves[indexMove];
     let piece = cells[indexClickedPiece].firstChild;
-    let didPromote = false;
     kingMoves += board[move.startLocation].isKing ? 1 : 0 ;
-    if (playerTurn ? (move.endLocation >= 0 && move.endLocation <= 7) : (move.endLocation >= 56 && move.endLocation <= 63)) {
+    if (playerTurn ? (move.endLocation >= 0 && move.endLocation <= 7) : (move.endLocation >= 56 && move.endLocation <= 63))
         board[move.startLocation].isKing = true;
-        didPromote = true;
-    }
     updateCells(piece, move);
     whitePlayer.arsenal = document.querySelectorAll('.white-piece');
     blackPlayer.arsenal = document.querySelectorAll('.black-piece');
@@ -166,7 +163,7 @@ function makeMove (event) {
     removePiecesAndMovesColor();
     removeClickToArsenal();
     indexClickedPiece = move.endLocation;
-    if (move.isMandatory && checkForSuccessiveMoves() && !didPromote) {
+    if (move.isMandatory && checkForSuccessiveMoves()) {
         allAvailbleMoves = getAllJumps();
         givePieceAndMovesColor();
     } else {
