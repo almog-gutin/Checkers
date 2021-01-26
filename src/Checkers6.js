@@ -1,103 +1,73 @@
 /*----------- Object Makers ----------*/
-const Piece = function(id, indexOnTheBoard, color) {
-    this.id = id;
-    this.indexOnTheBoard = indexOnTheBoard;
+const Piece = function(color) {
     this.color = color;
     this.isKing = false;
-    this.canMove = (endLocation, board) => {
-        if (!this.isKing) {
-            let direction7 = this.color ? -7 : 7;
-            let direction9 = this.color ? -9 : 9;
-            if (endLocation - this.indexOnTheBoard === direction7 && typeof board[endLocation] !== undefined && board[endLocation] === null)
-                return true;
-            if (endLocation - this.indexOnTheBoard === direction9 && board[endLocation] === null)
-                return true;
-            if (this.checkForJumps(this.indexOnTheBoard ,endLocation, board))
-                return true;
-            return false;
-        } else {
-            if (this.checkForJumps(this.indexOnTheBoard, endLocation, board))
-                return true;
-            let calc = endLocation - this.indexOnTheBoard;
-            let numOfPossibleMoves;
-            let direction;
-            if (calc % 7 === 0 && this.indexOnTheBoard != endLocation) {
-                numOfPossibleMoves = Math.abs(calc / 7);
-                direction = calc < 0 ? -7 : 7;
-                for (let i = 1; i <= numOfPossibleMoves; i++)
-                    if (board[this.indexOnTheBoard + (direction * i)] !== null)
-                        return false;
-                return true;
-            }
-            if (calc % 9 === 0 && this.indexOnTheBoard != endLocation) {
-                numOfPossibleMoves = Math.abs(calc / 9);
-                direction = calc < 0 ? -9 : 9;
-                for (let i = 1; i <= numOfPossibleMoves; i++) 
-                    if (board[this.indexOnTheBoard + (direction * i)] !== null)
-                        return false;
-                return true
-            }
-            return false;
-        }
-    };
-    this.checkForJumps =  (startLocation, endLocation, board) => {
-        if (!board[startLocation].isKing) {
-            let direction7 = board[startLocation].color ? -7 : 7;
-            let direction9 = board[startLocation].color ? -9 : 9;
-            if (endLocation-startLocation === (direction7 * 2) && typeof board[endLocation] !== undefined && board[endLocation] === null && board[startLocation + direction7] !== null && board[startLocation + direction7].color !== board[startLocation].color)
-                return true;
-            if (endLocation-startLocation === (direction9 * 2) && typeof board[endLocation] !== undefined && board[endLocation] === null && board[startLocation + direction9] !== null && board[startLocation + direction9].color !== board[startLocation].color)
-                return true;
-            return false;
-        } else {
-            let calc = endLocation - this.indexOnTheBoard;
-            let numOfPossibleMoves;
-            let direction;
-            let countEnemyPieces = 0;
-            if (calc % 7 === 0 && this.indexOnTheBoard != endLocation && board[endLocation] === null) {
-                numOfPossibleMoves = Math.abs(calc / 7);
-                direction = calc < 0 ? -7 : 7;
-                for (let i = 1; i < numOfPossibleMoves; i++) {
-                    if (board[this.indexOnTheBoard + (direction * i)] !== null && board[this.indexOnTheBoard + (direction * i)].color != this.color)
-                        countEnemyPieces++;
-                }
-                if (countEnemyPieces > 1 || countEnemyPieces === 0)
-                    return false;
-                else
-                    return true;
-            }
-            if (calc % 9 === 0 && this.indexOnTheBoard != endLocation && board[endLocation] === null) {
-                numOfPossibleMoves = Math.abs(calc / 9);
-                direction = calc < 0 ? -9 : 9;
-                for (let i = 1; i < numOfPossibleMoves; i++) {
-                    if (board[this.indexOnTheBoard + (direction * i)] !== null && board[this.indexOnTheBoard + (direction * i)].color != this.color)
-                        countEnemyPieces++;
-                    if (countEnemyPieces > 1)
-                        return false;
-                }
-                if (countEnemyPieces > 1 || countEnemyPieces === 0)
-                    return false;
-                else
-                    return true;
-            }
-            return false;
-        }
-    };
 };
 const Move = function(startLocation, endLocation, isMandatory) {
     this.startLocation = startLocation;
     this.endLocation = endLocation;
     this.isMandatory = isMandatory;
-    this.Equals = (move) => {
-        if (this.startLocation === move.startLocation && this.endLocation === move.endLocation && this.isMandatory === move.isMandatory)
-            return true;
-        return false;
-    };
 };
 const Player = function(color) {
     this.color = color;
     this.arsenal = document.querySelectorAll(color ? '.white-piece' : '.black-piece');
 }
+
+/*----------- Creating The HTML Board and Data Board ----------*/
+const htmlBoard = () => {
+    const board = document.getElementById('board');
+    let element;
+    for (let row = 0; row < 8; row++) 
+        for (let column = 0; column < 8; column++) {
+            element = document.createElement('div');
+            if (row % 2 === 0) {
+                if (column % 2 === 0) {
+                    element.className = 'no-piece';
+                    board.appendChild(element);
+                } else {
+                    if (row >=0 && row <=2) {
+                        element.innerHTML = '<p class="black-piece"></p>'
+                        board.appendChild(element);
+                    } else if (row > 2 && row < 5) 
+                        board.appendChild(element);
+                    else {
+                        element.innerHTML = '<p class="white-piece"></p>'
+                        board.appendChild(element);
+                    }
+                    element.addEventListener('click', makeMove);
+                }
+            } else {
+                if (column % 2 === 0) {
+                    if (row >=0 && row <=2) {
+                        element.innerHTML = '<p class="black-piece"></p>'
+                        board.appendChild(element);
+                    } else if (row > 2 && row < 5) 
+                        board.appendChild(element);
+                    else {
+                        element.innerHTML = '<p class="white-piece"></p>'
+                        board.appendChild(element);
+                    }
+                    element.addEventListener('click', makeMove);
+                } else {
+                    element.className = 'no-piece';
+                    board.appendChild(element);
+                }
+            }
+        }
+};
+const newBoard = () => {
+    return [
+        undefined, new Piece (false), undefined, new Piece (false), undefined, new Piece (false), undefined, new Piece (false),
+        new Piece (false), undefined, new Piece (false), undefined, new Piece (false), undefined, new Piece (false), undefined,
+        undefined, new Piece (false), undefined, new Piece (false), undefined, new Piece (false), undefined, new Piece (false),
+        null, undefined, null, undefined, null, undefined, null, undefined,
+        undefined, null, undefined, null, undefined, null, undefined, null,
+        new Piece (true) , undefined, new Piece (true), undefined, new Piece (true), undefined, new Piece (true), undefined,
+        undefined, new Piece (true), undefined, new Piece (true), undefined, new Piece (true), undefined, new Piece (true),
+        new Piece (true), undefined, new Piece (true), undefined, new Piece (true), undefined, new Piece (true), undefined
+    ];
+}
+htmlBoard();
 
 /*----------- DOM References ----------*/
 const homepage = document.getElementById('homepage');
@@ -114,20 +84,8 @@ const drawModalNoButton = document.getElementById('drawModal-no-button');
 const whiteTurn = document.getElementById('whiteTurn');
 const blackTurn = document.getElementById('blackTurn');
 const cells = document.getElementById('board').children;
-
-/*----------- New Board Function ----------*/
-function newBoard() {
-    return [
-        undefined, new Piece (1, 1, false), undefined, new Piece (2, 3, false), undefined, new Piece (3, 5, false), undefined, new Piece (4, 7, false),
-        new Piece (5, 8, false), undefined, new Piece (6, 10, false), undefined, new Piece (7, 12, false), undefined, new Piece (8, 14, false), undefined,
-        undefined, new Piece (9, 17, false), undefined, new Piece (10, 19, false), undefined, new Piece (11, 21, false), undefined, new Piece (12, 23, false),
-        null, undefined, null, undefined, null, undefined, null, undefined,
-        undefined, null, undefined, null, undefined, null, undefined, null,
-        new Piece (13, 40, true) , undefined, new Piece (14, 42, true), undefined, new Piece (15,44, true), undefined, new Piece(16,46, true), undefined,
-        undefined, new Piece (17, 49, true), undefined, new Piece (18, 51, true), undefined, new Piece (19, 53, true), undefined, new Piece (20, 55, true),
-        new Piece (21, 56, true), undefined, new Piece (22, 58, true), undefined, new Piece (23, 60, true), undefined, new Piece (24, 62, true), undefined
-    ];
-}
+let cellsArray = [...cells];
+let indexClickedPiece = null;
 
 /*----------- Game Properties ----------*/
 let board = newBoard();
@@ -141,7 +99,7 @@ let kingMoves = 0;
 let allAvailbleMoves = getAllAvailbleMoves();
 let playerArsenal = playerTurn ? whitePlayer.arsenal : blackPlayer.arsenal;
 
-/*----------- Functions For Buttons ----------*/
+/*----------- Event Listeners ----------*/
 homepageStartButton.addEventListener('click', () => {
     homepage.style.display = 'none';
     game.style.display = '';
@@ -165,28 +123,16 @@ drawModalNoButton.addEventListener('click', () => {
 });
 
 /*---------- Logic Of The Game ----------*/
-playerMove();
-function playerMove() {
-    if (isStalemate())
-        gameOver();
-    if (checkArsenalLength())
-        gameOver();
-    if (checkLengthAllAvailbleMoves())
-        gameOver();
-    addClickToArsenal();
-}
+addClickToArsenal();
 function addClickToArsenal() {
     for (let i = 0; i < playerArsenal.length; i++)
-        playerArsenal[i].setAttribute('onclick', `logicOfClick(${i})`);
+        playerArsenal[i].addEventListener('click', logicOfClick);
 }
-function logicOfClick (indexClickedPiece) {
-    removeClickToCells();
+function logicOfClick (event) {
+    event.stopPropagation();
+    indexClickedPiece = null;
     removePiecesAndMovesColor();
-    givePieceAndMovesColor(indexClickedPiece);
-}
-function removeClickToCells () {
-    for (let i = 0; i < cells.length; i++)
-        cells[i].removeAttribute('onclick');
+    givePieceAndMovesColor(event);
 }
 function removePiecesAndMovesColor() {
     for (let i = 0; i < playerArsenal.length; i++)
@@ -194,21 +140,19 @@ function removePiecesAndMovesColor() {
     for (let i = 0; i < cells.length; i++)
         cells[i].style = '';
 }
-function givePieceAndMovesColor(indexClickedPiece) {
-    playerArsenal[indexClickedPiece].style = 'border: 3px solid green';
+function givePieceAndMovesColor(event) {
+    if (indexClickedPiece === null)
+        indexClickedPiece = cellsArray.indexOf((event.target).parentElement);
+    cells[indexClickedPiece].firstChild.style = 'border: 3px solid green';
     for (let i = 0; i < allAvailbleMoves.length; i++)
-        if (parseInt(playerArsenal[indexClickedPiece].id) === board[allAvailbleMoves[i].startLocation].id) 
+        if (indexClickedPiece === allAvailbleMoves[i].startLocation) 
             cells[allAvailbleMoves[i].endLocation].style = 'background-color: yellow;';
-    addClickToCells(indexClickedPiece); 
 }
-function addClickToCells(indexClickedPiece) {
-    for (let indexMove = 0; indexMove < allAvailbleMoves.length; indexMove++)
-        if (parseInt(playerArsenal[indexClickedPiece].id) === board[allAvailbleMoves[indexMove].startLocation].id)
-            cells[allAvailbleMoves[indexMove].endLocation].setAttribute('onclick', `makeMove(${indexClickedPiece}, ${indexMove})`);
-}
-function makeMove (indexClickedPiece, indexMove) {
+function makeMove (event) {
+    let indexMove = findIndexMove(cellsArray.indexOf(event.target));
+    if (indexClickedPiece === null || indexMove === null) return;
     let move = allAvailbleMoves[indexMove];
-    let piece = playerArsenal[indexClickedPiece];
+    let piece = cells[indexClickedPiece].firstChild;
     let didPromote = false;
     kingMoves += board[move.startLocation].isKing ? 1 : 0 ;
     if (playerTurn ? (move.endLocation >= 0 && move.endLocation <= 7) : (move.endLocation >= 56 && move.endLocation <= 63)) {
@@ -219,36 +163,22 @@ function makeMove (indexClickedPiece, indexMove) {
     whitePlayer.arsenal = document.querySelectorAll('.white-piece');
     blackPlayer.arsenal = document.querySelectorAll('.black-piece');
     updateBoard(move); 
-    if (board[move.endLocation] != null)
-        board[move.endLocation].indexOnTheBoard = move.endLocation;
     removePiecesAndMovesColor();
-    removeClickToCells();
     removeClickToArsenal();
-    if (move.isMandatory && checkForSuccessiveMoves(move.endLocation) && !didPromote) {
-        allAvailbleMoves = getAllJumps(move.endLocation);
-        givePieceAndMovesColor(indexClickedPiece);
-    } else
+    indexClickedPiece = move.endLocation;
+    if (move.isMandatory && checkForSuccessiveMoves() && !didPromote) {
+        allAvailbleMoves = getAllJumps();
+        givePieceAndMovesColor();
+    } else {
+        indexClickedPiece = null;
         changePlayerTurn();
+    }
 }
-function getAllJumps(startLocation) {
-    let allJumps = [];
-    for (let endLocation = 0; endLocation < 64; endLocation++)
-        if (board[startLocation].checkForJumps(startLocation, endLocation, board))
-            allJumps.push(new Move(startLocation, endLocation, true));
-    return allJumps;
-}
-function getSuccessiveMoves(indexOfPiece) {
-    let successiveMoves = [];
-    for (let endLocation = 0; endLocation < 64; endLocation++)
-        if (board[indexOfPiece].checkForJumps(indexOfPiece, endLocation, board))
-            successiveMoves.push(new Move (indexOfPiece, endLocation));
-    return successiveMoves;
-}
-function checkForSuccessiveMoves(indexOfPiece) {
-    for (let endLocation = 0; endLocation < 64; endLocation++)
-        if (board[indexOfPiece].checkForJumps(indexOfPiece, endLocation, board))
-            return true;
-    return false;
+function findIndexMove(endLocation) {
+    for (let indexMove = 0; indexMove < allAvailbleMoves.length; indexMove++)
+        if (indexClickedPiece === allAvailbleMoves[indexMove].startLocation && endLocation === allAvailbleMoves[indexMove].endLocation)
+            return indexMove;
+    return null;
 }
 function updateCells (piece, move) {
     if (board[move.startLocation].isKing)
@@ -275,6 +205,7 @@ function updateCells (piece, move) {
             if (!move.isMandatory && allAvailbleMoves[i].startLocation === move.startLocation && allAvailbleMoves[i].isMandatory)
                 cells[move.endLocation].innerHTML = '';
         }
+    cellsArray = [...cells];
 }
 function updateBoard(move) {
     let direction = (move.endLocation - move.startLocation) % 7 === 0 ? 7 : 9;
@@ -301,11 +232,21 @@ function updateBoard(move) {
 }
 function removeClickToArsenal() {
     for (let i = 0; i < playerArsenal.length; i++)
-        playerArsenal[i].removeAttribute('onclick');
+        playerArsenal[i].removeEventListener('click', logicOfClick);
+}
+function checkForSuccessiveMoves() {
+    for (let endLocation = 0; endLocation < 64; endLocation++)
+        if (checkForJumps(indexClickedPiece, endLocation)) return true;
+    return false;
+}
+function getAllJumps() {
+    let allJumps = [];
+    for (let endLocation = 0; endLocation < 64; endLocation++)
+        if (checkForJumps(indexClickedPiece, endLocation))
+            allJumps.push(new Move(indexClickedPiece, endLocation, true));
+    return allJumps;
 }
 function changePlayerTurn() {
-    if (checkArsenalLength())
-        gameOver();
     if (playerTurn) {
         playerTurn = false;
         whiteTurn.style.color = 'rgba(255, 255, 255, 0.2)';
@@ -315,9 +256,85 @@ function changePlayerTurn() {
         whiteTurn.style.color = '#D9D9D9';
         blackTurn.style.color = 'rgba(255, 255, 255, 0.2)';
     }
+    if (isStalemate())
+        gameOver();
+    if (checkArsenalLength())
+        gameOver();
+    if (checkLengthAllAvailbleMoves())
+        gameOver();
     allAvailbleMoves = getAllAvailbleMoves();
     playerArsenal = playerTurn ? whitePlayer.arsenal : blackPlayer.arsenal;
-    playerMove();
+    addClickToArsenal();
+}
+function getAllAvailbleMoves() {
+    let availbleMoves = [];
+    for (let startLocation = 0; startLocation < 64; startLocation++)
+        if (board[startLocation] !== undefined && board[startLocation] !== null && board[startLocation].color === playerTurn)
+            for (let endLocation = 0; endLocation < 64; endLocation++) 
+                if (canMove(startLocation, endLocation))
+                    if (checkForJumps(startLocation, endLocation))
+                        availbleMoves.push(new Move(startLocation, endLocation, true));
+                    else
+                        availbleMoves.push(new Move(startLocation, endLocation, false));
+    return availbleMoves;
+}
+function canMove(startLocation, endLocation) {
+    if (!board[startLocation].isKing) {
+        let direction7 = board[startLocation].color ? -7 : 7;
+        let direction9 = board[startLocation].color ? -9 : 9;
+        if (endLocation - startLocation === direction7 && typeof board[endLocation] !== undefined && board[endLocation] === null) return true;
+        if (endLocation - startLocation === direction9 && board[endLocation] === null) return true;
+        if (checkForJumps(startLocation ,endLocation)) return true;
+        return false;
+    } else {
+        if (checkForJumps(startLocation, endLocation)) return true;
+        let calc = endLocation - startLocation;
+        let numOfPossibleMoves;
+        let direction;
+        if (calc % 7 === 0 && startLocation != endLocation) {
+            numOfPossibleMoves = Math.abs(calc / 7);
+            direction = calc < 0 ? -7 : 7;
+            for (let i = 1; i <= numOfPossibleMoves; i++)
+                if (board[startLocation + (direction * i)] !== null) return false;
+            return true;
+            }
+        if (calc % 9 === 0 && startLocation != endLocation) {
+            numOfPossibleMoves = Math.abs(calc / 9);
+            direction = calc < 0 ? -9 : 9;
+            for (let i = 1; i <= numOfPossibleMoves; i++) 
+                if (board[startLocation + (direction * i)] !== null) return false;
+            return true
+        }
+        return false;
+    }
+}
+function checkForJumps(startLocation, endLocation) {
+    if (!board[startLocation].isKing) {
+        let direction7 = board[startLocation].color ? -7 : 7;
+        let direction9 = board[startLocation].color ? -9 : 9;
+        if (endLocation-startLocation === (direction7 * 2) && typeof board[endLocation] !== undefined && board[endLocation] === null && board[startLocation + direction7] !== null && board[startLocation + direction7].color !== board[startLocation].color) return true;
+        if (endLocation-startLocation === (direction9 * 2) && typeof board[endLocation] !== undefined && board[endLocation] === null && board[startLocation + direction9] !== null && board[startLocation + direction9].color !== board[startLocation].color) return true;
+        return false;
+    } else {
+        let calc = endLocation - startLocation;
+        let numOfPossibleMoves;
+        let direction;
+        let countEnemyPieces = 0;
+        if (calc % 7 === 0 && startLocation != endLocation && board[endLocation] === null) {
+            numOfPossibleMoves = Math.abs(calc / 7);
+            direction = calc < 0 ? -7 : 7;
+            for (let i = 1; i < numOfPossibleMoves; i++)
+                if (board[startLocation + (direction * i)] !== null && board[startLocation + (direction * i)].color != playerTurn) countEnemyPieces++;
+        }
+        if (calc % 9 === 0 && startLocation != endLocation && board[endLocation] === null) {
+            numOfPossibleMoves = Math.abs(calc / 9);
+            direction = calc < 0 ? -9 : 9;
+            for (let i = 1; i < numOfPossibleMoves; i++) {
+                if (board[startLocation + (direction * i)] !== null && board[startLocation + (direction * i)].color != playerTurn) countEnemyPieces++;
+            }
+        }
+        return !(countEnemyPieces > 1 || countEnemyPieces === 0);
+    }
 }
 function checkLengthAllAvailbleMoves() {
     if (allAvailbleMoves.length === 0) {
@@ -325,18 +342,6 @@ function checkLengthAllAvailbleMoves() {
         return true;
     }
     return false;
-}
-function getAllAvailbleMoves() {
-    let availbleMoves = [];
-    for (let startLocation = 0; startLocation < 64; startLocation++)
-        if (board[startLocation] !== undefined && board[startLocation] !== null && board[startLocation].color === playerTurn)
-            for (let endLocation = 0; endLocation < 64; endLocation++) 
-                if (board[startLocation].canMove(endLocation, board))
-                    if (board[startLocation].checkForJumps(startLocation, endLocation, board))
-                        availbleMoves.push(new Move(startLocation, endLocation, true));
-                    else
-                        availbleMoves.push(new Move(startLocation, endLocation, false));
-    return availbleMoves;
 }
 function checkArsenalLength() {
     if ((playerTurn ? whitePlayer.arsenal.length : blackPlayer.arsenal.length) === 0) {
